@@ -3,9 +3,9 @@ import os
 import librosa
 import numpy as np
 import matplotlib.pyplot as plt
-#import tensorflow as tf
+import tensorflow as tf
 from matplotlib.pyplot import specgram
-
+from sklearn.neural_network import MLPClassifier
 
 def load_sound_files(file_paths):
     raw_sounds = []
@@ -71,7 +71,7 @@ def parse_audio_files(parent_dir,sub_dirs,file_ext="*.wav"):
               continue
             ext_features = np.hstack([mfccs,chroma,mel,contrast,tonnetz])
             features = np.vstack([features,ext_features])
-            labels = np.append(labels, fn.split('/')[2].split('-')[1])
+            labels = np.append(labels, fn.split('/')[-1].split('-')[1])
     return np.array(features), np.array(labels, dtype = np.int)
 
 def one_hot_encode(labels):
@@ -82,11 +82,20 @@ def one_hot_encode(labels):
     return one_hot_encode
 
 
-parent_dir = '../Data/UrbanSound8K/audio/Sound-Data'
+parent_dir = '../Data/UrbanSound8K/audio/'
 tr_sub_dirs = ["fold1","fold2"]
 ts_sub_dirs = ["fold3"]
+
 tr_features, tr_labels = parse_audio_files(parent_dir,tr_sub_dirs)
 ts_features, ts_labels = parse_audio_files(parent_dir,ts_sub_dirs)
 
+print(tr_features.size)
 tr_labels = one_hot_encode(tr_labels)
 ts_labels = one_hot_encode(ts_labels)
+
+##########################################################################################################################
+
+clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+clf.fit(tr_features, tr_labels)
+
+clf.predict(ts_features,ts_labels)

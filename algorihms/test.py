@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from matplotlib.pyplot import specgram
 from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
+import sys
+import pickle
 
 def load_sound_files(file_paths):
     raw_sounds = []
@@ -71,6 +74,7 @@ def parse_audio_files(parent_dir,sub_dirs,file_ext="*.wav"):
               continue
             ext_features = np.hstack([mfccs,chroma,mel,contrast,tonnetz])
             features = np.vstack([features,ext_features])
+            print(fn)
             labels = np.append(labels, fn.split('/')[-1].split('-')[1])
     return np.array(features), np.array(labels, dtype = np.int)
 
@@ -81,21 +85,43 @@ def one_hot_encode(labels):
     one_hot_encode[np.arange(n_labels), labels] = 1
     return one_hot_encode
 
+def serializarList(objectSerializar,fileName):
+    pickle.dump(objectSerializar,open( fileName, "wb" ) )
+
+def deserialize(fileName):
+    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+    file = os.path.join(THIS_FOLDER, fileName)
+    return pickle.load(open(file,"rb"))
 
 parent_dir = '../Data/UrbanSound8K/audio/'
-tr_sub_dirs = ["fold1","fold2"]
+#tr_sub_dirs = ["fold1","fold2"]
+tr_sub_dirs = ["fold1"]
 ts_sub_dirs = ["fold3"]
 
-tr_features, tr_labels = parse_audio_files(parent_dir,tr_sub_dirs)
-ts_features, ts_labels = parse_audio_files(parent_dir,ts_sub_dirs)
+if len(sys.argv)==1:
+    print(serialize)
+    tr_features, tr_labels = parse_audio_files(parent_dir,tr_sub_dirs)
+    ts_features, ts_labels = parse_audio_files(parent_dir,ts_sub_dirs)
+    serializarList(tr_features,"tr_features")
+    serializarList(tr_labels,"tr_labels")
+    serializarList(ts_features,"ts_features")
+    serializarList(ts_labels,"ts_labels")
+else:
+    print(deserialize)
+    tr_features = deserialize("tr_features")
+    tr_labels = deserialize("tr_labels")
+    ts_features = deserialize("ts_features")
+    ts_labels = deserialize("ts_labels")
+    
 
-print(tr_features.size)
-tr_labels = one_hot_encode(tr_labels)
-ts_labels = one_hot_encode(ts_labels)
+#print(tr_features.size)
+tr_labels = one_hot_encode(tr_labels)  #why this
+ts_labels = one_hot_encode(ts_labels)   # why this
 
 ##########################################################################################################################
 
 clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
 clf.fit(tr_features, tr_labels)
 
-clf.predict(ts_features,ts_labels)
+y_pred=clf.predict(ts_features)
+accuracy = accuracy_score(y_pred, ts_labels)

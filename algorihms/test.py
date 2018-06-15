@@ -121,40 +121,83 @@ def apply_max_pool(x,kernel_size,stride_size):
                           strides=[1, stride_size, stride_size, 1], padding='SAME')
 parent_dir = '../Data/UrbanSound8K/audio/'
 #tr_sub_dirs = ["fold1","fold2"]
-tr_sub_dirs = ["fold1"]
-ts_sub_dirs = ["fold3"]
+#sub_dirs=["fold1","fold2","fold3","fold4","fold5","fold6","fold7","fold8","fold9"]
+sub_dirs=["fold3","fold4"]
+#sub_dirs=["fold5","fold6","fold7","fold8","fold9"]
+
+#tr_sub_dirs = ["fold1"]
+#ts_sub_dirs = ["fold3"]
 
 if len(sys.argv)==1:
-    print("serialize")
-    tr_features, tr_labels = parse_audio_files(parent_dir,tr_sub_dirs)
-    ts_features, ts_labels = parse_audio_files(parent_dir,ts_sub_dirs)
-    serializarList(tr_features,"tr_features")
-    serializarList(tr_labels,"tr_labels")
-    serializarList(ts_features,"ts_features")
-    serializarList(ts_labels,"ts_labels")
+    print("WARNNING extracting the features from all the folders that contain the sounds will take hours. To extract only from a few folders or only one change sub_dirs list")
+    print("Extracting Features")
+#    tr_features, tr_labels = parse_audio_files(parent_dir,tr_sub_dirs)
+#    ts_features, ts_labels = parse_audio_files(parent_dir,ts_sub_dirs)
+#    serializarList(tr_features,"tr_features")
+#    serializarList(tr_labels,"tr_labels")
+#    serializarList(ts_features,"ts_features")
+#    serializarList(ts_labels,"ts_labels")
+    for folder in sub_dirs:
+        print("Processing folder_: "+folder)
+        features, labels = parse_audio_files(parent_dir,[folder])
+        print("Serialize folder"+ folder)
+        serializarList(features,"features_folder_"+folder)
+        serializarList(labels,"labels_folder_"+folder)
 else:
-    print("deserialize")
-    tr_features = deserialize("tr_features")
-    tr_labels = deserialize("tr_labels")
-    ts_features = deserialize("ts_features")
-    ts_labels = deserialize("ts_labels")
+    print("Deserialize Features and Labels")
+    features=deserialize("features_folder_"+sub_dirs[0])
+    labels=np.empty(0)
+    featuresTemp=[]
+    for folder in sub_dirs:
+        print("Deserialize folder_"+folder)
+        #features = np.append(deserialize("features_folder_"+folder),features)
+        if folder!=sub_dirs[0]:
+            featuresTemp = deserialize("features_folder_"+folder)
+            features = np.vstack((featuresTemp,features))
+        #labelsTemp = deserialize("labels_folder_"+folder)
+        labels = np.append(deserialize("labels_folder_"+folder),labels)
+
+        #features = deserialize("features_folder_"+folder)
+        #labels = deserialize("labels_folder_"+folder)
+    #ts_features = deserialize("ts_features")
+    #ts_labels = deserialize("ts_labels")
 
 
 #print(tr_features.size)
+
 #tr_labels = one_hot_encode(tr_labels)  #why this
 #ts_labels = one_hot_encode(ts_labels)   # why this
 
 ##########################################################################################################################
+sizeOfTrainSet= int(len(features)*0.6)
+sizeOfCrossValidationSet = int((len(features)-sizeOfTrainSet)/2)
+sizeOfTestSet = len(features)- sizeOfCrossValidationSet - sizeOfTrainSet
 
 
+train_set_features = features[0:sizeOfTrainSet]
+train_set_labels = labels[0:sizeOfTrainSet]
+
+CrossValidation_set_features = features[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
+CrossValidation_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
+
+test_set_features = features[sizeOfTrainSet+sizeOfCrossValidationSet:sizeOfTrainSet+sizeOfCrossValidationSet+sizeOfTestSet]
+test_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
+
+#train_set_features=features
+#CrossValidation_set_features=features
+#train_set_labels=labels
+#CrossValidation_set_labels=labels
+
+
+print(len(train_set_features.tolist()))
+print(train_set_labels.shape[0])
 clf = tree.DecisionTreeClassifier()
-clf.fit(tr_features.tolist(), tr_labels.tolist())
+clf.fit(train_set_features.tolist(), train_set_labels.tolist())
 
-y_pred=clf.predict(ts_features.tolist())
+y_pred=clf.predict(CrossValidation_set_features.tolist())
 print(y_pred)
-accuracy = accuracy_score(y_pred, ts_labels)
+accuracy = accuracy_score(y_pred, CrossValidation_set_labels.tolist())
 print("Accuracy DecisionTreeClassifier: %f" % (accuracy*100.0))
-
 
 
 #classif = OneVsRestClassifier(estimator=SVC(random_state=0))
@@ -164,9 +207,10 @@ print("Accuracy DecisionTreeClassifier: %f" % (accuracy*100.0))
 #print("Accuracy OneVsRestClassifier: %f" % (accuracy*100.0))
 
 
-print(tr_features.shape[1])
+#print(tr_features.shape[1])
 clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(280, 300), random_state=1,learning_rate_init=0.01)
-y_pred=clf.fit(tr_features.tolist(), tr_labels.tolist()).predict(ts_features.tolist())
+clf.fit(train_set_features, train_set_labels)
+y_pred=clf.predict(CrossValidation_set_features)
 print(y_pred)
-accuracy = accuracy_score(y_pred, ts_labels)
+accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
 print("Accuracy MLPClassifier: %f" % (accuracy*100.0))

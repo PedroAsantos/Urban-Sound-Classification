@@ -97,32 +97,10 @@ def deserialize(fileName):
     file = os.path.join(THIS_FOLDER, fileName)
     return pickle.load(open(file,"rb"))
 
-def apply_convolution(x,kernel_size,num_channels,depth):
-    weights = weight_variable([kernel_size, kernel_size, num_channels, depth])
-    biases = bias_variable([depth])
-    return tf.nn.relu(tf.add(conv2d(x, weights),biases))
-
-def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev = 0.1)
-    return tf.Variable(initial)
-def bias_variable(shape):
-    initial = tf.constant(1.0, shape = shape)
-    return tf.Variable(initial)
-def conv2d(x, W):
-    return tf.nn.conv2d(x,W,strides=[1,2,2,1], padding='SAME')
-
-def apply_convolution(x,kernel_size,num_channels,depth):
-    weights = weight_variable([kernel_size, kernel_size, num_channels, depth])
-    biases = bias_variable([depth])
-    return tf.nn.relu(tf.add(conv2d(x, weights),biases))
-
-def apply_max_pool(x,kernel_size,stride_size):
-    return tf.nn.max_pool(x, ksize=[1, kernel_size, kernel_size, 1],
-                          strides=[1, stride_size, stride_size, 1], padding='SAME')
 parent_dir = '../Data/UrbanSound8K/audio/'
 #tr_sub_dirs = ["fold1","fold2"]
 #sub_dirs=["fold1","fold2","fold3","fold4","fold5","fold6","fold7","fold8","fold9"]
-sub_dirs=["fold3","fold4"]
+sub_dirs=["fold3"]
 #sub_dirs=["fold5","fold6","fold7","fold8","fold9"]
 
 #tr_sub_dirs = ["fold1"]
@@ -182,11 +160,6 @@ CrossValidation_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossVal
 
 test_set_features = features[sizeOfTrainSet+sizeOfCrossValidationSet:sizeOfTrainSet+sizeOfCrossValidationSet+sizeOfTestSet]
 test_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
-
-#train_set_features=features
-#CrossValidation_set_features=features
-#train_set_labels=labels
-#CrossValidation_set_labels=labels
 
 
 print(len(train_set_features.tolist()))

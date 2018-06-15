@@ -9,6 +9,10 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score
 import sys
 import pickle
+from sklearn import tree
+from sklearn import svm
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.svm import SVC
 
 def load_sound_files(file_paths):
     raw_sounds = []
@@ -93,13 +97,35 @@ def deserialize(fileName):
     file = os.path.join(THIS_FOLDER, fileName)
     return pickle.load(open(file,"rb"))
 
+def apply_convolution(x,kernel_size,num_channels,depth):
+    weights = weight_variable([kernel_size, kernel_size, num_channels, depth])
+    biases = bias_variable([depth])
+    return tf.nn.relu(tf.add(conv2d(x, weights),biases))
+
+def weight_variable(shape):
+    initial = tf.truncated_normal(shape, stddev = 0.1)
+    return tf.Variable(initial)
+def bias_variable(shape):
+    initial = tf.constant(1.0, shape = shape)
+    return tf.Variable(initial)
+def conv2d(x, W):
+    return tf.nn.conv2d(x,W,strides=[1,2,2,1], padding='SAME')
+
+def apply_convolution(x,kernel_size,num_channels,depth):
+    weights = weight_variable([kernel_size, kernel_size, num_channels, depth])
+    biases = bias_variable([depth])
+    return tf.nn.relu(tf.add(conv2d(x, weights),biases))
+
+def apply_max_pool(x,kernel_size,stride_size):
+    return tf.nn.max_pool(x, ksize=[1, kernel_size, kernel_size, 1],
+                          strides=[1, stride_size, stride_size, 1], padding='SAME')
 parent_dir = '../Data/UrbanSound8K/audio/'
 #tr_sub_dirs = ["fold1","fold2"]
 tr_sub_dirs = ["fold1"]
 ts_sub_dirs = ["fold3"]
 
 if len(sys.argv)==1:
-    print(serialize)
+    print("serialize")
     tr_features, tr_labels = parse_audio_files(parent_dir,tr_sub_dirs)
     ts_features, ts_labels = parse_audio_files(parent_dir,ts_sub_dirs)
     serializarList(tr_features,"tr_features")
@@ -107,21 +133,40 @@ if len(sys.argv)==1:
     serializarList(ts_features,"ts_features")
     serializarList(ts_labels,"ts_labels")
 else:
-    print(deserialize)
+    print("deserialize")
     tr_features = deserialize("tr_features")
     tr_labels = deserialize("tr_labels")
     ts_features = deserialize("ts_features")
     ts_labels = deserialize("ts_labels")
-    
+
 
 #print(tr_features.size)
-tr_labels = one_hot_encode(tr_labels)  #why this
-ts_labels = one_hot_encode(ts_labels)   # why this
+#tr_labels = one_hot_encode(tr_labels)  #why this
+#ts_labels = one_hot_encode(ts_labels)   # why this
 
 ##########################################################################################################################
 
-clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
-clf.fit(tr_features, tr_labels)
 
-y_pred=clf.predict(ts_features)
+clf = tree.DecisionTreeClassifier()
+clf.fit(tr_features.tolist(), tr_labels.tolist())
+
+y_pred=clf.predict(ts_features.tolist())
+print(y_pred)
 accuracy = accuracy_score(y_pred, ts_labels)
+print("Accuracy DecisionTreeClassifier: %f" % (accuracy*100.0))
+
+
+
+#classif = OneVsRestClassifier(estimator=SVC(random_state=0))
+#y_pred=classif.fit(tr_features.tolist(), tr_labels.tolist()).predict(ts_features.tolist())
+#print(y_pred)
+#accuracy = accuracy_score(y_pred, ts_labels)
+#print("Accuracy OneVsRestClassifier: %f" % (accuracy*100.0))
+
+
+print(tr_features.shape[1])
+clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(280, 300), random_state=1,learning_rate_init=0.01)
+y_pred=clf.fit(tr_features.tolist(), tr_labels.tolist()).predict(ts_features.tolist())
+print(y_pred)
+accuracy = accuracy_score(y_pred, ts_labels)
+print("Accuracy MLPClassifier: %f" % (accuracy*100.0))

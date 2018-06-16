@@ -5,6 +5,7 @@ from sklearn import tree
 import sys
 import ControlCenter
 from sklearn.neural_network import MLPClassifier
+from sklearn.utils import shuffle
 
 
 
@@ -14,6 +15,7 @@ else:
     features,labels = ControlCenter.getLabelsAndFeatures(0)
 
 
+features,labels = shuffle(features,labels, random_state=0)
 
 
 sizeOfTrainSet= int(len(features)*0.6)

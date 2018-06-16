@@ -5,7 +5,7 @@ from sklearn import tree
 import sys
 import ControlCenter
 from sklearn.neural_network import MLPClassifier
-
+from sklearn.utils import shuffle
 
 
 if len(sys.argv)==1:
@@ -14,7 +14,7 @@ else:
     features,labels = ControlCenter.getLabelsAndFeatures(0)
 
 
-
+features,labels = shuffle(features,labels, random_state=0)
 
 sizeOfTrainSet= int(len(features)*0.6)
 sizeOfCrossValidationSet = int((len(features)-sizeOfTrainSet)/2)

@@ -97,7 +97,7 @@ def getLabelsAndFeatures(isToSerialize):
     parent_dir = '../Data/UrbanSound8K/audio/'
     #tr_sub_dirs = ["fold1","fold2"]
     #sub_dirs=["fold1","fold2","fold3","fold4","fold5","fold6","fold7","fold8","fold9"]
-    sub_dirs=["fold5"]
+    sub_dirs=["fold8","fold9"]
     #sub_dirs=["fold5","fold6","fold7","fold8","fold9"]
 
     #tr_sub_dirs = ["fold1"]
@@ -121,7 +121,7 @@ def getLabelsAndFeatures(isToSerialize):
     else:
         print("Deserialize Features and Labels")
         features=deserialize("features_folder_"+sub_dirs[0])
-        labels=np.empty(0)getLabelsAndFeaturesgetLabelsAndFeatures
+        labels=np.empty(0)
         featuresTemp=[]
         for folder in sub_dirs:
             print("Deserialize folder_"+folder)

@@ -32,10 +32,26 @@ test_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
 
 
 
+
+def MPL_Classifier_1layer(neurons):
+	clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(neurons), random_state=1,learning_rate_init=0.01)
+	clf.fit(train_set_features, train_set_labels)
+	y_pred=clf.predict(CrossValidation_set_features)
+	print(y_pred)
+	accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
+	print("Accuracy MLPClassifier: %f" % (accuracy*100.0))
+	return accuracy*100
+
+
+
+
 #print(tr_features.shape[1])
-clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(280, 300), random_state=1,learning_rate_init=0.01)
-clf.fit(train_set_features, train_set_labels)
-y_pred=clf.predict(CrossValidation_set_features)
-print(y_pred)
-accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
-print("Accuracy MLPClassifier: %f" % (accuracy*100.0))
+neurons = [25, 50, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]
+accuracy_list = []
+
+#testing one hidden layer
+i = 0
+while i < len(neurons):
+	print(neurons[i])
+	x = MPL_Classifier_1layer(neurons[i])
+	i+=1

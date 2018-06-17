@@ -46,12 +46,23 @@ def MPL_Classifier_1layer(neurons):
 
 
 #print(tr_features.shape[1])
-neurons = [25, 50, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]
-accuracy_list = []
+neurons = [25, 50, 100, 150, 200]
+accuracy_list_1layer = []
 
 #testing one hidden layer
 i = 0
 while i < len(neurons):
 	print(neurons[i])
-	x = MPL_Classifier_1layer(neurons[i])
+	accuracy_list_1layer.append(MPL_Classifier_1layer(neurons[i]))
 	i+=1
+
+i = 0
+while i < len(accuracy_list_1layer):
+	print(accuracy_list_1layer[i])
+	i+=1
+
+ylim(0, 100) 
+plt.plot(neurons, accuracy_list_1layer)
+plt.xlabel('Number of neurons')
+plt.ylabel('Accuracy')
+plt.show()

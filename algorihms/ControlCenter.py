@@ -97,7 +97,7 @@ def getLabelsAndFeatures(isToSerialize):
     parent_dir = '../Data/UrbanSound8K/audio/'
     #tr_sub_dirs = ["fold1","fold2"]
     #sub_dirs=["fold1","fold2","fold3","fold4","fold5","fold6","fold7","fold8","fold9"]
-    sub_dirs=["fold8","fold9"]
+    sub_dirs=["fold1","fold2","fold3","fold4","fold5","fold6","fold7"]
     #sub_dirs=["fold5","fold6","fold7","fold8","fold9"]
 
     #tr_sub_dirs = ["fold1"]

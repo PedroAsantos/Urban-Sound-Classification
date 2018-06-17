@@ -14,7 +14,7 @@ else:
     features,labels = ControlCenter.getLabelsAndFeatures(0)
 
 
-features,labels = shuffle(features,labels, random_state=0)
+features,labels = shuffle(features,labels,random_state=0)
 
 sizeOfTrainSet= int(len(features)*0.6)
 sizeOfCrossValidationSet = int((len(features)-sizeOfTrainSet)/2)

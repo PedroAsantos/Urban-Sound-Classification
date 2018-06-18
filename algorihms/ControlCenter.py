@@ -7,7 +7,7 @@ import tensorflow as tf
 from matplotlib.pyplot import specgram
 from sklearn.metrics import accuracy_score
 import pickle
-
+import librosa.display
 
 def load_sound_files(file_paths):
     raw_sounds = []
@@ -18,15 +18,16 @@ def load_sound_files(file_paths):
 
 def plot_waves(sound_names,raw_sounds):
     i = 1
-    fig = plt.figure(figsize=(25,60), dpi = 900)
+#    fig = plt.figure(figsize=(25,60), dpi = 900)
+    #plt.figure(figsize=(25, 60))
     for n,f in zip(sound_names,raw_sounds):
-        plt.subplot(10,1,i)
-        librosa.display.waveplot(np.array(f),sr=22050)
+        #plt.subplot(3,1,i)
+        #librosa.display.waveplot(np.array(f),sr=22050)
+        plt.figure(i)
+        librosa.display.waveplot(np.array(f), sr=22050)
         plt.title(n.title())
-        i += 1
-    plt.suptitle("Figure 1: Waveplot",x=0.5, y=0.915,fontsize=18)
-    plt.show()
-
+        i+=1
+    plt.show()  
 def plot_specgram(sound_names,raw_sounds):
     i = 1
     fig = plt.figure(figsize=(25,60), dpi = 900)

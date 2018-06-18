@@ -14,9 +14,11 @@ if len(sys.argv)==1:
 else:
     features,labels = ControlCenter.getLabelsAndFeatures(0)
 
+np.set_printoptions(threshold='nan')
 
 features,labels = shuffle(features,labels, random_state=0)
 
+#print(collections.Counter(labels))
 
 sizeOfTrainSet= int(len(features)*0.6)
 sizeOfCrossValidationSet = int((len(features)-sizeOfTrainSet)/2)
@@ -36,9 +38,9 @@ test_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
 print(len(train_set_features.tolist()))
 print(train_set_labels.shape[0])
 clf = tree.DecisionTreeClassifier()
-clf.fit(train_set_features.tolist(), train_set_labels.tolist())
+clf.fit(train_set_features, train_set_labels)
 
-y_pred=clf.predict(CrossValidation_set_features.tolist())
+y_pred=clf.predict(CrossValidation_set_features)
 print(y_pred)
-accuracy = accuracy_score(y_pred, CrossValidation_set_labels.tolist())
+accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
 print("Accuracy DecisionTreeClassifier: %f" % (accuracy*100.0))

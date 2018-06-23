@@ -13,8 +13,21 @@ else:
 
 np.set_printoptions(threshold='nan')
 
-
+numberOfLabels=[]
 print(collections.Counter(labels))
+s=collections.Counter(labels)
+for i in range(len(s)):
+    numberOfLabels.append(s[i])
+print(numberOfLabels)
+print(sum(numberOfLabels))
+
+plt.bar(range(len(s)), numberOfLabels)
+plt.xticks(range(len(s)), range(len(s)))
+plt.ylabel('Number of sounds')
+plt.xlabel('Classes')
+plt.title('Number of sounds files of each class')
+plt.show()
+
 
 
 sound_file_paths = ["../Data/UrbanSound8K/audio/fold5/100852-0-0-20.wav","../Data/UrbanSound8K/audio/fold10/100648-1-4-0.wav","../Data/UrbanSound8K/audio/fold5/100263-2-0-161.wav"]

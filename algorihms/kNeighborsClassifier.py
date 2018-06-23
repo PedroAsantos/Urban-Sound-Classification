@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
+
 #######################################
 ## Use arg -t to test with a lot of inputs in the algorithm
 ## Use arg -s to extract the features of all the data and serialize the data. If you have already the data serializable run without -s.
@@ -47,6 +48,13 @@ print(sys.argv)
 
 toTestList = [x for x in sys.argv if '-t' in x]
 
+def calculate_confusion_matrix_errors(cm):
+    sumErrors = range(0,len(cm))
+
+    for i in range(0,len(cm)-1):
+        sumErrors[i] = sum(cm[i,:])
+        sumErrors[i]  = sumErrors[i] - cm[i,i]
+    return sumErrors
 
 if len(toTestList)>0:
     for neighbors in neighborsList:
@@ -67,10 +75,8 @@ if len(toTestList)>0:
     plt.show()
 else:
 
-    #clf = KNeighborsClassifier(n_neighbors=1)
-
-
-    clf = KNeighborsClassifier()
+    clf = KNeighborsClassifier(n_neighbors=1)
+#    clf = KNeighborsClassifier()
     print(clf)
     clf.fit(train_set_features, train_set_labels)
 
@@ -79,9 +85,17 @@ else:
     accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
     #accuracysNeigh.append(accuracy)
     print("Accuracy KNeighborsClassifier neigh: %f" % (accuracy*100.0))
+    c_m=confusion_matrix(CrossValidation_set_labels, y_pred)
     print("confusion_matrix:")
-    print(confusion_matrix(CrossValidation_set_labels, y_pred))
-
+    print(c_m)
+    sum_errors = calculate_confusion_matrix_errors(c_m)
+    print(sum_errors)
+    plt.bar(range(len(c_m)), sum_errors)
+    plt.xticks(range(len(c_m)), range(len(c_m)))
+    plt.ylabel('Miss predictions')
+    plt.xlabel('Classes')
+    plt.title('Number of miss predictions of each class')
+    plt.show()
 
 
 

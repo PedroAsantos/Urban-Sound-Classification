@@ -6,6 +6,7 @@ from sklearn.utils import shuffle
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 #######################################
 ## Use arg -t to test with a lot of inputs in the algorithm
 ## Use arg -s to extract the features of all the data and serialize the data. If you have already the data serializable run without -s.
@@ -66,16 +67,20 @@ if len(toTestList)>0:
     plt.show()
 else:
 
-    clf = KNeighborsClassifier(n_neighbors=1)
+    #clf = KNeighborsClassifier(n_neighbors=1)
+
+
+    clf = KNeighborsClassifier()
+    print(clf)
     clf.fit(train_set_features, train_set_labels)
 
     y_pred=clf.predict(CrossValidation_set_features)
     print(y_pred)
     accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
-    accuracysNeigh.append(accuracy)
+    #accuracysNeigh.append(accuracy)
     print("Accuracy KNeighborsClassifier neigh: %f" % (accuracy*100.0))
-
-
+    print("confusion_matrix:")
+    print(confusion_matrix(CrossValidation_set_labels, y_pred))
 
 
 

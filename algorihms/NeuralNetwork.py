@@ -48,6 +48,15 @@ def MPL_Classifier_1layer(neurons):
 	print("Accuracy MLPClassifier: %f" % (accuracy*100.0))
 	return accuracy*100
 
+def MPL_Classifier_1layer_alphas(alpha_test):
+	clf = MLPClassifier(solver='lbfgs', alpha=alpha_test,hidden_layer_sizes=(1000), random_state=1,learning_rate_init=0.01)
+	clf.fit(train_set_features, train_set_labels)
+	y_pred=clf.predict(CrossValidation_set_features)
+	print(y_pred)
+	accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
+	print("Accuracy MLPClassifier: %f" % (accuracy*100.0))
+	return accuracy*100
+
 def MPL_Classifier_2layer(neurons1, neurons2):
 	clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(neurons1, neurons2), random_state=1,learning_rate_init=0.01)
 	clf.fit(train_set_features, train_set_labels)
@@ -85,12 +94,34 @@ clf.fit(train_set_features, train_set_labels)
 y_pred=clf.predict(CrossValidation_set_features)
 print(confusion_matrix(CrossValidation_set_labels, y_pred))
 
+
 ### Ploting results (2D) ###
 plt.plot(neurons, accuracy_list_1layer)
 plt.ylim(0,100)
 plt.scatter(neurons, accuracy_list_1layer)
 plt.grid()
 plt.xlabel('Number of neurons')
+plt.ylabel('Accuracy')
+plt.show()
+
+## Test different learning rates
+alphas = [1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1]
+i = 0
+while i < len(alphas):
+	print(alphas[i])
+	accuracy_list_1layer.append(MPL_Classifier_1layer_alphas(alphas[i]))
+	i+=1
+i = 0
+while i < len(accuracy_list_1layer):
+	print(accuracy_list_1layer[i])
+	i+=1
+
+### Ploting results (2D) ###
+plt.plot(alphas, accuracy_list_1layer)
+plt.ylim(0,100)
+plt.scatter(alphas, accuracy_list_1layer)
+plt.grid()
+plt.xlabel('Learning rate')
 plt.ylabel('Accuracy')
 plt.show()
 

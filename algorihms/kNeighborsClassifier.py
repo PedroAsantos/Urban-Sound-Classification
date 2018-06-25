@@ -7,10 +7,13 @@ from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_recall_fscore_support as score
 
 #######################################
 ## Use arg -t to test with a lot of inputs in the algorithm
 ## Use arg -s to extract the features of all the data and serialize the data. If you have already the data serializable run without -s.
+## Use arg -p to run preprocessing with StandardScaler
+## Use arg -f to run with test set
 ########################################
 
 
@@ -40,13 +43,10 @@ CrossValidation_set_features = features[sizeOfTrainSet:sizeOfTrainSet+sizeOfCros
 CrossValidation_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
 
 test_set_features = features[sizeOfTrainSet+sizeOfCrossValidationSet:sizeOfTrainSet+sizeOfCrossValidationSet+sizeOfTestSet]
-test_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
+test_set_labels = labels[sizeOfTrainSet+sizeOfCrossValidationSet:sizeOfTrainSet+sizeOfCrossValidationSet+sizeOfTestSet]
 
-neighborsList=[1,2,3,4,5,6,7,8,9,10,11]
-accuracysNeigh=[]
-print(sys.argv)
 
-toTestList = [x for x in sys.argv if '-t' in x]
+#print(sys.argv)
 
 def calculate_confusion_matrix_errors(cm):
     sumErrors = range(0,len(cm))
@@ -56,13 +56,38 @@ def calculate_confusion_matrix_errors(cm):
         sumErrors[i]  = sumErrors[i] - cm[i,i]
     return sumErrors
 
+
+toPreProcList = [x for x in sys.argv if '-p' in x]
+toRunTestSet = [x for x in sys.argv if '-f' in x]
+if len(toPreProcList)>0 or len(toRunTestSet)>0 :
+#    CrossValidation_set_features=ControlCenter.applyPCA(CrossValidation_set_features)
+#    test_set_features=ControlCenter.applyPCA(test_set_features)
+#    train_set_features=ControlCenter.applyPCA(train_set_features)
+     CrossValidation_set_features=ControlCenter.applyStandardScaler(CrossValidation_set_features)
+     test_set_features=ControlCenter.applyStandardScaler(test_set_features)
+     train_set_features=ControlCenter.applyStandardScaler(train_set_features)
+
+#    CrossValidation_set_features=ControlCenter.applyNormalization(CrossValidation_set_features)
+#    test_set_features=ControlCenter.applyNormalization(test_set_features)
+#    train_set_features=ControlCenter.applyNormalization(train_set_features)
+
+toTestList = [x for x in sys.argv if '-t' in x]
+
 if len(toTestList)>0:
+    saveModel=[]
+    accuracys=[]
+    accuracysNeigh=[]
+    accuracyP=[]
+    neighborsList=[1,2,3,4,5,6,7,8,9,10,11]
+    neighborsSecList=[1,2,3,4,5]
+    pp=[1,2,3]
+##testing neighbors
     for neighbors in neighborsList:
         clf = KNeighborsClassifier(n_neighbors=neighbors)
         clf.fit(train_set_features, train_set_labels)
 
         y_pred=clf.predict(CrossValidation_set_features)
-        print(y_pred)
+        #print(y_pred)
         accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
         accuracysNeigh.append(accuracy)
         print("Accuracy KNeighborsClassifier neigh: %f" % (accuracy*100.0))
@@ -71,11 +96,54 @@ if len(toTestList)>0:
     plt.title('K Neighbors Classifier - Python') # subplot 211 title
     t = plt.xlabel('Number of Neighbors', fontsize=12)
     t = plt.ylabel('Accuracy', fontsize=12)
-
     plt.show()
-else:
+    accuracysNeigh=[]
+#testing p with neighbor = 1
+    for p in pp:
+            clf = KNeighborsClassifier(n_neighbors=1,p=p)
+            clf.fit(train_set_features, train_set_labels)
 
-    clf = KNeighborsClassifier(n_neighbors=1)
+            y_pred=clf.predict(CrossValidation_set_features)
+            #print(y_pred)
+            accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
+            accuracyP.append(accuracy)
+            print("Nei:"+str(1)+"p:"+str(p)+"acc:"+str(accuracy*100.0))
+            print("Accuracy KNeighborsClassifier neigh: %f" % (accuracy*100.0))
+    plt.plot(pp,accuracyP)
+    plt.title('K Neighbors Classifier - Python') # subplot 211 title
+    t = plt.xlabel('p', fontsize=12)
+    t = plt.ylabel('Accuracy', fontsize=12)
+    plt.show()
+    accuracyP=[]
+#testing combinations between neighbors and p
+    accuracysNeighPP = [];
+    for neighbors in neighborsSecList:
+        accuracysTempNeigh=[]
+        for p in pp:
+            clf = KNeighborsClassifier(n_neighbors=neighbors,p=p)
+            clf.fit(train_set_features, train_set_labels)
+
+            y_pred=clf.predict(CrossValidation_set_features)
+            #print(y_pred)
+            accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
+            accuracysTempNeigh.append(accuracy)
+            print("nei:"+str(neighbors)+"p:"+str(p)+"acc:"+str(accuracy*100.0))
+            print("Accuracy KNeighborsClassifier neigh: %f" % (accuracy*100.0))
+            accuracys.append([accuracy])
+            saveModel.append([p])
+        accuracysNeighPP.append(accuracysTempNeigh)
+    print(accuracysNeighPP)
+    maxAccuracyPP=[]
+    ppMax=[]
+    for listTemp in accuracysNeighPP:
+        maxAccuracyPP.append(max(listTemp))
+        ppMax.append(listTemp.index(max(listTemp)))
+    print(maxAccuracyPP)
+    print(ppMax)
+
+if len(toTestList)==0 and len(toRunTestSet)==0:
+
+    clf = KNeighborsClassifier(n_neighbors=1,p=1)
 #    clf = KNeighborsClassifier()
     print(clf)
     clf.fit(train_set_features, train_set_labels)
@@ -90,6 +158,7 @@ else:
     print(c_m)
     sum_errors = calculate_confusion_matrix_errors(c_m)
     print(sum_errors)
+    print(sum(sum_errors))
     plt.bar(range(len(c_m)), sum_errors)
     plt.xticks(range(len(c_m)), range(len(c_m)))
     plt.ylabel('Miss predictions')
@@ -99,7 +168,28 @@ else:
 
 
 
-fn="../Data/UrbanSound8K/audio/fold10/102857-5-0-18.wav"
+if len(toRunTestSet)>0:
+    clf = KNeighborsClassifier(n_neighbors=1,p=1)
+#    clf = KNeighborsClassifier()
+    print(clf)
+    clf.fit(train_set_features, train_set_labels)
+
+    y_pred=clf.predict(test_set_features)
+    print(y_pred)
+    accuracy = accuracy_score(y_pred, test_set_labels)
+    #accuracysNeigh.append(accuracy)
+    print("Accuracy KNeighborsClassifier neigh: %f" % (accuracy*100.0))
+    c_m=confusion_matrix(test_set_labels, y_pred)
+    print("confusion_matrix:")
+    print(c_m)
+    precision, recall, fscore, support = score(test_set_labels, y_pred)
+
+    print('precision: {}'.format(precision))
+    print('recall: {}'.format(recall))
+    print('fscore: {}'.format(fscore))
+    print('support: {}'.format(support))
+
+fn="../Data/UrbanSound8K/audio/fold7/101848-9-0-1.wav"
 features, labels = np.empty((0,193)), np.empty(0)
 
 mfccs, chroma, mel, contrast,tonnetz = ControlCenter.extract_feature(fn)

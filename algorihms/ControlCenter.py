@@ -8,6 +8,21 @@ from matplotlib.pyplot import specgram
 from sklearn.metrics import accuracy_score
 import pickle
 import librosa.display
+from sklearn import decomposition
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import normalize
+
+def applyPCA(X):
+    pca = decomposition.PCA(n_components=100)
+    pca.fit(X)
+    return pca.transform(X)
+
+def applyStandardScaler(X):
+    scaler = StandardScaler()
+    return scaler.fit_transform(X)
+
+def applyNormalization(X):
+    return normalize(X, norm='l2')
 
 def load_sound_files(file_paths):
     raw_sounds = []
@@ -27,7 +42,7 @@ def plot_waves(sound_names,raw_sounds):
         librosa.display.waveplot(np.array(f), sr=22050)
         plt.title(n.title())
         i+=1
-    plt.show()  
+    plt.show()
 def plot_specgram(sound_names,raw_sounds):
     i = 1
     fig = plt.figure(figsize=(25,60), dpi = 900)

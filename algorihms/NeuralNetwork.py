@@ -34,6 +34,14 @@ CrossValidation_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossVal
 test_set_features = features[sizeOfTrainSet+sizeOfCrossValidationSet:sizeOfTrainSet+sizeOfCrossValidationSet+sizeOfTestSet]
 test_set_labels = labels[sizeOfTrainSet:sizeOfTrainSet+sizeOfCrossValidationSet]
 
+toPreProcList = [x for x in sys.argv if '-p' in x]
+ 
+if len(toPreProcList)>0 :
+	CrossValidation_set_features=ControlCenter.applyStandardScaler(CrossValidation_set_features)
+	test_set_features=ControlCenter.applyStandardScaler(test_set_features)
+	train_set_features=ControlCenter.applyStandardScaler(train_set_features)
+	print("Preprocessing applied succsfully!")
+
 
 #
 # Model methods
@@ -50,6 +58,34 @@ def MPL_Classifier_1layer(neurons):
 
 def MPL_Classifier_1layer_alphas(alpha_test):
 	clf = MLPClassifier(solver='lbfgs', alpha=alpha_test,hidden_layer_sizes=(1000), random_state=1,learning_rate_init=0.01)
+	clf.fit(train_set_features, train_set_labels)
+	y_pred=clf.predict(CrossValidation_set_features)
+	print(y_pred)
+	accuracy = accuracy_score(y_pred, CrossValidation_set_labels)
+	print("Accuracy MLPClassifier: %f" % (accuracy*100.0))
+	return accuracy*100
+
+def MPL_Classifier_layers(layers):
+	if(layers==1):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100), random_state=1,learning_rate_init=0.01)
+	elif(layers==2):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100), random_state=1,learning_rate_init=0.01)
+	elif(layers==3):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100, 100), random_state=1,learning_rate_init=0.01)
+	elif(layers==4):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100, 100, 100), random_state=1,learning_rate_init=0.01)
+	elif(layers==5):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100, 100, 100, 100), random_state=1,learning_rate_init=0.01)
+	elif(layers==6):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100, 100, 100, 100, 100), random_state=1,learning_rate_init=0.01)
+	elif(layers==7):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100, 100, 100, 100, 100, 100), random_state=1,learning_rate_init=0.01)
+	elif(layers==8):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100, 100, 100, 100, 100, 100, 100), random_state=1,learning_rate_init=0.01)
+	elif(layers==9):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100, 100, 100, 100, 100, 100, 100, 100), random_state=1,learning_rate_init=0.01)
+	elif(layers==10):
+		clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 100, 100, 100, 100, 100, 100, 100, 100, 100), random_state=1,learning_rate_init=0.01)
 	clf.fit(train_set_features, train_set_labels)
 	y_pred=clf.predict(CrossValidation_set_features)
 	print(y_pred)
@@ -75,6 +111,7 @@ def MPL_Classifier_2layer(neurons1, neurons2):
 neurons = [25, 50, 100, 150, 200, 500]
 accuracy_list_1layer = []
 accuracy_list_2layer = []
+accuracy_list_layers = []
 
 ### Testing one hidden layer ###
 i = 0
@@ -88,11 +125,11 @@ while i < len(accuracy_list_1layer):
 	i+=1
 
 ### Confusion Matrix for 1000 neurons
-print("confusion_matrix:")
-clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(1000), random_state=1,learning_rate_init=0.01)
-clf.fit(train_set_features, train_set_labels)
-y_pred=clf.predict(CrossValidation_set_features)
-print(confusion_matrix(CrossValidation_set_labels, y_pred))
+#print("confusion_matrix:")
+#clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(1000), random_state=1,learning_rate_init=0.01)
+#clf.fit(train_set_features, train_set_labels)
+#y_pred=clf.predict(CrossValidation_set_features)
+#print(confusion_matrix(CrossValidation_set_labels, y_pred))
 
 
 ### Ploting results (2D) ###
@@ -115,16 +152,6 @@ i = 0
 while i < len(accuracy_list_1layer):
 	print(accuracy_list_1layer[i])
 	i+=1
-
-### Ploting results (2D) ###
-plt.plot(alphas, accuracy_list_1layer)
-plt.ylim(0,100)
-plt.scatter(alphas, accuracy_list_1layer)
-plt.grid()
-plt.xlabel('Learning rate')
-plt.ylabel('Accuracy')
-plt.show()
-
 
 ### Testing with two hidden layers ###
 i = 0
@@ -155,5 +182,27 @@ ax.scatter(X, Y, accuracy_list_2layer)
 ax.set_xlabel('Neurons in first layer')
 ax.set_ylabel('Neurons in second layer')
 ax.set_zlabel('Accuracy')
+ax.set_zlim(0, 100)
 
+plt.show()
+
+### Testing multiple layers
+layers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+i = 1
+while i < 11:
+	print(i)
+	accuracy_list_layers.append(MPL_Classifier_layers(i))
+	i+=1
+i = 0
+while i < len(accuracy_list_layers):
+	print(accuracy_list_layers[i])
+	i+=1
+
+### Ploting results (2D) ###
+plt.plot(layers, accuracy_list_layers)
+plt.ylim(0,100)
+plt.scatter(layers, accuracy_list_layers)
+plt.grid()
+plt.xlabel('Number of Hidden Layers')
+plt.ylabel('Accuracy')
 plt.show()
